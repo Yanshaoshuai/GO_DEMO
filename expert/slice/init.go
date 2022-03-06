@@ -6,7 +6,7 @@ import (
 
 func main() {
 	arr := [10]int{} //this is an array
-	slice := []int{} //this is an array
+	slice := []int{} //this is an slice
 	fmt.Printf("%T\n", arr)
 	fmt.Printf("%T\n", slice)
 	fmt.Println("arr:", arr)
