@@ -1,7 +1,7 @@
 ### Hash冲突
 > 当两个或以上数量的键被"Hash"到了同一个bucket时，我们称这些键发生了冲突,Go使用链地址法来解决冲突。
 
-![](../../resource/map-03-struct_sketch.png)
+![](../../../resource/map-03-struct_sketch.png)
 ### 负载因子
 负载因子用于衡量一个Hash表的冲突情况，公式为:
 >负载因子=键数量/bucket数量
