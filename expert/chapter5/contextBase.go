@@ -99,5 +99,22 @@ func removeChild(context Context, c *cancelCtx) {
 	//just to avoid bug
 }
 
+type timeCtx struct {
+	cancelCtx
+	timer    *time.Timer
+	deadline time.Time //指定最后期限
+}
+
+type valueCtx struct {
+	Context
+	key, val interface{}
+}
+
+func (c *valueCtx) Value(key interface{}) interface{} {
+	if c.key == key {
+		return c.val
+	}
+	return c.Context.Value(key) //可以通过context查询到父节点的value值
+}
 func main() {
 }
