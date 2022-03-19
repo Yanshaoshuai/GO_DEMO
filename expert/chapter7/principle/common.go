@@ -5,7 +5,6 @@ import (
 	"io"
 	"runtime"
 	"sync"
-	"testing"
 	"time"
 )
 
@@ -32,7 +31,7 @@ type common struct {
 	duration   time.Duration       //记录测试所花费的时间
 	barrier    chan bool           //用于控制父测试和子测试执行的channel,如果测试为Parallel,则会阻塞等待
 	signal     chan bool           //通知当前测试结束
-	sub        []*testing.T        //子测试列表
+	sub        []*T                //子测试列表
 }
 
 func (c *common) Cleanup(f func()) {
