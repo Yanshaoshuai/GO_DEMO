@@ -82,3 +82,54 @@ func (b *B) SetByte(n int64) {
 func (b *B) ReportAllocs() {
 	b.showAllocResult = true
 }
+
+func (b *B) runN(n int) {
+	b.N = n        //指定n值
+	b.ResetTimer() //重置时间
+	b.StartTimer()
+	b.benchFunc(b) //执行测试
+	b.StopTimer()
+}
+
+func (b *B) Run(name string, f func(b *B)) bool {
+	sub := &B{
+		common: common{signal: make(chan bool),
+			name:   name,
+			parent: &b.common,
+		},
+		benchFunc: f,
+	}
+	if sub.run1() { //先执行一次 如果子测试不出错且子测试没有子测试则继续执行sub.run()
+		sub.run() //run里决定要执行多少次runN()
+	}
+	b.add(sub.result) //累加统计结果到父测试中
+	return !sub.failed
+}
+
+func (b *B) run1() bool {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (b *B) run() {
+
+}
+
+func (b *B) add(result testing.BenchmarkResult) {
+
+}
+
+func (b *B) launch() {
+	d := b.benchTime
+	for n := 1; !b.failed && b.duration < d && n < 1e9; { //最少执行b.benchTime(默认1s)时间
+		//最多执行1e9次
+		//last:=n
+		//n=int(d.Nanoseconds())//预测接下来要执行多少次 b.benchTime/每个操作耗时
+		//if nsop:=b.nsPerOP();nsop!=0{
+		//	n/=int(nsop)
+		//}
+		//n=max(min(m+n/5,100*last),last+1)//避免增长较快 先增长20%,至少增长1次
+		//n=roundUp(n)//下次迭代次数向上取整到10的指数 方便阅读
+		b.runN(n)
+	}
+}
