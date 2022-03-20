@@ -3,6 +3,7 @@ package principle
 import (
 	"runtime"
 	"sync"
+	"testing"
 	"time"
 )
 
@@ -36,7 +37,7 @@ func tRunner(t *T, fn func(t *T)) {
 // 简略版
 func (t *T) Run(name string, f func(t *T)) bool {
 	t = &T{
-		//	common{
+		//	common:common{
 		//	barrier: make(chan bool),
 		//	signal: make(chan bool),
 		//	name: testName,//由name及父测试名组合而成 此处忽略
@@ -108,4 +109,11 @@ func (c *testContext) release() {
 	c.numWaiting--
 	c.mu.Unlock()
 	c.startParallel <- true //通知等待执行的测试执行
+}
+
+type M struct {
+	tests      []testing.InternalTest      //单元测试
+	benchmarks []testing.InternalBenchmark //性能测试
+	examples   []testing.InternalExample   //示例测试
+	timer      *time.Timer                 //测试超时时间
 }

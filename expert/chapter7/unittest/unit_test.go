@@ -1,6 +1,8 @@
 package unittest
 
 import (
+	"flag"
+	"fmt"
 	"testing"
 )
 
@@ -9,6 +11,13 @@ import (
 //TestXXX开头
 //有且仅有*testing.T参数
 func TestAdd(t *testing.T) {
+	if !flag.Parsed() {
+		flag.Parse()
+	}
+	//-args 指定参数
+	for i, arg := range flag.Args() {
+		fmt.Printf("arg %d is %s\n", i, arg)
+	}
 	var a = 1
 	var b = 2
 	var expected = 3
