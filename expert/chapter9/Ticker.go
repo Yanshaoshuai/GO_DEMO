@@ -5,11 +5,6 @@ import (
 	"time"
 )
 
-//type Ticker struct {
-//	C <-chan time.Time
-//	r runtimeTimer
-//}
-
 // TickerDemo 周期性任务
 func TickerDemo() {
 	ticker := time.NewTicker(1 * time.Second)
