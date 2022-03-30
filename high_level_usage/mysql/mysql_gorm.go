@@ -177,4 +177,9 @@ func update(db *gorm.DB) {
 	db.Model(&User{ID: 1}).Updates(User{Name: "Yanshaoshuai", Deleted: false})
 	//带上零值
 	db.Model(&User{ID: 1}).Select("*").Updates(User{Name: "Yanshaoshuai", Deleted: false})
+	//NOTE 默认 禁止无条件删除/更新
+	db.Model(&User{}).Update("name", "YanShaoShuai")
+	//临时允许无条件删除/更新
+	//db.Session(&gorm.Session{AllowGlobalUpdate: true}).Model(&User{}).Update("name","Yanshaoshuai")
+
 }
