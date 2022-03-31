@@ -1,17 +1,21 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
+	"log"
 	"time"
 )
 
 type User struct {
 	ID      int
 	Name    string
+	Age     int
 	Deleted bool
 }
 type UserHasPet struct {
@@ -21,6 +25,7 @@ type UserHasPet struct {
 }
 
 type Pet struct {
+	ID   string
 	Name string
 }
 
@@ -35,9 +40,12 @@ func dbConnect(user, pass, addr, dbName string) (*gorm.DB, error) {
 		"Local")
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
+			//表前缀
+			TablePrefix:   "",
 			SingularTable: true,
 		},
 		//Logger: logger.Default.LogMode(logger.Info), // 日志配置
+		Logger: logger.Default.LogMode(logger.Info),
 	})
 
 	if err != nil {
@@ -72,7 +80,11 @@ func main() {
 		panic(err)
 	}
 	//insert(db)
-	update(db)
+	//update(db)
+	//delete(db)
+	query(db)
+	//subQuery(db)
+	//joinSelect(db)
 }
 
 func insert(db *gorm.DB) {
@@ -182,4 +194,127 @@ func update(db *gorm.DB) {
 	//临时允许无条件删除/更新
 	//db.Session(&gorm.Session{AllowGlobalUpdate: true}).Model(&User{}).Update("name","Yanshaoshuai")
 
+	//select for update
+	var users []User
+	sql := db.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&users).Statement.SQL.String()
+	log.Println(sql)
+}
+
+func delete(db *gorm.DB) {
+	//永久删除
+	db.Unscoped().Where("name='Yanshaoshuai'").Delete(&User{})
+}
+
+func query(db *gorm.DB) {
+	//查询按照ID升序的第一条记录
+	var firstUser User
+	db.First(&firstUser)
+	log.Printf("%v\n", firstUser)
+
+	//取一条数据 没有排序
+	var takeUser User
+	db.Take(&takeUser)
+	log.Printf("%v\n", takeUser)
+
+	//按照ID升序获取最后一条数据
+	var lastUser User
+	db.Last(&lastUser)
+	log.Printf("%v\n", lastUser)
+
+	var users []User
+	result := db.Find(&users, []int{1, 2, 3})
+	//判读是否没有找到
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		log.Fatal(gorm.ErrRecordNotFound.Error())
+	}
+	log.Printf("%v\n", users)
+	var user User
+	db.Where("name=?", "huitailang").Find(&user)
+	log.Printf("%v\n", user)
+	user = User{}
+	db.Where("name=?", "huitailang").Where("deleted=?", false).Find(&user)
+	log.Printf("%v\n", user)
+	db.Where("name in ?", []string{"huitailang", "hongtailang"}).Find(&users)
+	log.Printf("%v\n", users)
+	db.Where("(name,id) in ?", [][]interface{}{{"huitailang", 25}, {"hongtailang", 26}}).Find(&users)
+	log.Printf("%v\n", users)
+	db.Where([]int{1, 2, 3}).Find(&user)
+	log.Printf("%v\n", &user)
+	users = []User{}
+	//struct查询 忽略零值
+	db.Where(&User{Name: "huitailang", Deleted: false}).Find(&users)
+	log.Printf("%v\n", users)
+	users = []User{}
+	db.Where(map[string]interface{}{"name": "huitailang", "deleted": false}).Find(&users)
+	log.Printf("%v\n", users)
+	//带上零值
+	//1用where map方式 如上
+	//方法二指定字段
+	users = []User{}
+	db.Where(&User{Name: "huitailang", Deleted: false}, "name", "deleted").Find(&users)
+	log.Printf("%v\n", users)
+	//方法三 用string
+	users = []User{}
+	db.Where("name=? and deleted=?", "huitailang", false).Find(&users)
+	log.Printf("%v\n", users)
+
+	//单个字段 结果转成数组
+	var names []string
+	db.Model(&User{}).Pluck("name", &names)
+	log.Printf("%v\n", names)
+
+	//分批处理
+	//db.Model(&User{}).FindInBatches(&users, 10, func(tx *gorm.DB, batch int) error {
+	//	log.Printf("第%d批次 :%v\n", batch, users)
+	//	return tx.Error
+	//})
+	//命名参数
+	user = User{}
+	result = db.Session(&gorm.Session{DryRun: true}).Model(&User{}).
+		Where("name=@name", map[string]interface{}{"name": "huitailang"}).Find(&user)
+	log.Printf("sql:%s", result.Statement.SQL.String())
+	log.Printf("%v\n", user)
+}
+
+func subQuery(db *gorm.DB) {
+	var users []User
+	sub := db.Table("user").Select("AVG(id)")
+	db.Where("id>(?)", sub).Find(&users)
+	log.Printf("%v\n", users)
+
+	var avgAge []float64
+	sub = db.Select("Avg(id)").Where("name like ?", "hui%").Table("user")
+	db.Model(&User{}).Select("Avg(age) as avgage").Group("name").Having("Avg(age)<(?)", sub).Pluck("avgage", &avgAge)
+	log.Printf("%v\n", avgAge)
+
+	//使用gorm.DB作为Table参数
+	sub = db.Model(&User{}).Select("name", "age")
+	var user User
+	db.Table("(?) as u", sub).Where("age<?", 18).Find(&user)
+	log.Printf("%v\n", user)
+
+	users = []User{}
+	sub1 := db.Model(&User{}).Select("name")
+	sub2 := db.Model(&Pet{}).Select("name")
+	db.Raw("? UNION ?", sub1, sub2).Scan(&users)
+
+	statement := db.Where(
+		db.Where("pizza=?", "pepperoni").Where(
+			db.Where("size=?", "small").Or("size=?", "medium"),
+		),
+	).Or(
+		db.Where("pizza=?", "hawaiian").Where("size=?", "xlarge"),
+	).Find(&Pizza{}).Statement
+	log.Printf("%v", statement.SQL.String())
+
+}
+
+func joinSelect(db *gorm.DB) {
+	joins := db.Session(&gorm.Session{DryRun: true}).
+		Joins("left join company on company.user_id=user.id").
+		Joins("left join manager on manager.user_id=user.id").Find(&User{})
+	log.Printf("%v\n", joins.Statement.SQL.String())
+}
+
+type Pizza struct {
 }
