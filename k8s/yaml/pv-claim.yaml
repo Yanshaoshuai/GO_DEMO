@@ -1,0 +1,12 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pv-claim
+spec:
+  accessModes:
+    #ReadWriteOnce 表示这个Volume的挂载方式是可读写,且只能被挂载在一个节点上
+    - ReadWriteOnce
+  storageClassName: "local-storage"
+  resources:
+    requests:
+      storage: 1Gi
