@@ -30,10 +30,3 @@ func romanToInt(s string) int {
 	result += m[s[i-1]]
 	return result
 }
-func main() {
-	println(romanToInt("III"))
-	println(romanToInt("IV"))
-	println(romanToInt("IX"))
-	println(romanToInt("LVIII"))
-	println(romanToInt("MCMXCIV"))
-}

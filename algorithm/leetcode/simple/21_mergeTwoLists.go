@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 type ListNode struct {
 	Val  int
 	Next *ListNode
@@ -29,14 +27,4 @@ func mergeTwoLists(list1 *ListNode, list2 *ListNode) *ListNode {
 		cursor.Next = list2
 	}
 	return root.Next
-}
-
-func main() {
-	root1 := &ListNode{1, &ListNode{2, &ListNode{4, nil}}}
-	root2 := &ListNode{1, &ListNode{3, &ListNode{4, nil}}}
-	result := mergeTwoLists(root1, root2)
-	for result != nil {
-		fmt.Printf("%d", result.Val)
-		result = result.Next
-	}
 }
