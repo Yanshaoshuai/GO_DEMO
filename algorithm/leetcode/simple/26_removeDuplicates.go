@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 func removeDuplicates(nums []int) int {
 	//i := 0
 	//for i < len(nums)-1 {
@@ -37,14 +35,4 @@ func removeDuplicates(nums []int) int {
 		}
 	}
 	return j + 1
-}
-
-func aFun(a []int) {
-	a = []int{1, 2, 3}
-}
-func main() {
-	a := []int{1, 23}
-	aFun(a)
-	fmt.Printf("%v", a)
-	removeDuplicates([]int{0, 0, 1, 1, 1, 2, 2, 3, 3, 4})
 }

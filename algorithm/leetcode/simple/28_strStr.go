@@ -28,9 +28,3 @@ func strStr(haystack string, needle string) int {
 	}
 	return -1
 }
-
-//"mississippi"
-//"issip"
-func main() {
-	strStr("mississippi", "issip")
-}
