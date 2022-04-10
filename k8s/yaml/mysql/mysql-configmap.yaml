@@ -8,8 +8,10 @@ data:
   master.cnf: |
     # 主节点配置文件
     [mysqld]
+    datadir=/var/lib/mysql/mysql
     log-bin
   slave.cnf: |
     # 从节点配置文件
     [mysqld]
+    datadir=/var/lib/mysql/mysql
     super-read-only
