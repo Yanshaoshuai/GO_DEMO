@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  intializers:
+    pending:
+      - name: envoy.initializer.kubernetes.io
+  name: myapp-pod
+  labels:
+    app: myapp-pod
+...
