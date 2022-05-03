@@ -1,0 +1,18 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: local-pv-pod
+spec:
+  volumes:
+    - name: local-pv-volume
+      persistentVolumeClaim:
+        claimName: local-pv-pvc
+  containers:
+    - name: local-pv-container
+      image: nginx
+      ports:
+        - containerPort: 80
+          name: "http-server"
+      volumeMounts:
+        - mountPath: "/usr/share/nginx/html"
+          name: local-pv-volume
